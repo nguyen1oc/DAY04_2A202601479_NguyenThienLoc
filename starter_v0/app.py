@@ -159,6 +159,7 @@ with st.sidebar:
         st.session_state.messages = []
         st.session_state.history = []
         st.session_state.last_results = None
+        st.session_state.selected_case = None
         st.session_state.transcript_id = f"st_{datetime.now().strftime('%Y%m%dT%H%M%S%f')}"
         
     # Load corresponding files from history
