@@ -1,6 +1,6 @@
 # Kế hoạch triển khai Giao diện Streamlit (Research Agent UI)
 
-Kế hoạch này chi tiết hóa cách thức xây dựng giao diện tương tác (Streamlit App) cho Research Agent, cho phép chạy thử nghiệm và so sánh kết quả qua các phiên bản `v0` đến `v3`.
+Tài liệu này ghi nhận kế hoạch và kết quả xây dựng ứng dụng giao diện tương tác (Streamlit App) cho Research Agent, hỗ trợ chạy thử nghiệm, so sánh và đánh giá các phiên bản từ `v0` đến `v4`.
 
 ---
 
@@ -13,52 +13,45 @@ Kế hoạch này chi tiết hóa cách thức xây dựng giao diện tương t
 
 ## 2. Thiết kế giao diện `app.py`
 
-Chúng ta sẽ tạo file mới `starter_v0/app.py` với cấu trúc như sau:
+File ứng dụng giao diện chính nằm tại [app.py](file:///c:/Users/nguyenloc/OneDrive/Desktop/vinAi/day_4/lab/Day04-C401-Prompt-Engineering-Tool-Calling-Labs-student-k3/starter_v0/app.py) bao gồm các thành phần:
 
 ### Sidebar (Cấu hình hệ thống & Chọn phiên bản)
 1. **Model Provider Settings**:
    - Chọn Provider (`openrouter`, `openai`, `anthropic`, `gemini`).
    - Nhập tên Model (mặc định lấy theo provider đã chọn).
 2. **Version Selector (Bộ chọn phiên bản)**:
-   - Cho phép chọn phiên bản: `v0`, `v1`, `v2`, `v3`.
-   - Khi chọn phiên bản, hệ thống sẽ:
-     - Tự động load `system_prompt` và `tools` tương ứng từ thư mục `artifacts/history/`.
-     - Hiển thị `prompt_hash`, `tools_hash`, và chuỗi `artifact_version` (ví dụ: `v3+p65cf8283d409...`) để kiểm soát phiên bản đang chạy.
-     - Cho phép xem nhanh nội dung của system prompt và danh sách các tool trong tab phụ.
-3. **Test Case Runner (Chạy thử kịch bản có sẵn)**:
-   - Đọc danh sách 20 test case từ file `data/eval_base.json`.
-   - Cho phép chọn nhanh 1 test case từ dropdown (ví dụ: `R10_missing_handle` - *Tóm tắt 5 tweet mới nhất*).
-   - Hiển thị metadata của test case (Skill kiểm tra, Độ khó, Tool mong đợi).
-   - Nút **"Load Case"** sẽ tự động nạp chuỗi hội thoại/câu hỏi của case đó vào khung chat.
+   - Cho phép chọn phiên bản: `v0`, `v1`, `v2`, `v3`, `v4`.
+   - **Tự động Reset Chat:** Khi chuyển đổi giữa các phiên bản, lịch sử chat cũ sẽ tự động được làm sạch để tránh lẫn lộn ngữ cảnh.
+   - **Xem cấu hình:** Hỗ trợ xem nhanh nội dung của system prompt và danh sách các tool trong tab phụ thông qua hộp mở rộng.
+3. **Test Case Runner (Bộ chọn kịch bản kiểm thử thông minh)**:
+   - **Chọn Test Suite:** Cho phép lựa chọn giữa `base` (eval_base.json), `group` (eval_group.json - bộ test case nhóm tự thiết kế), và `extension` (eval_research_extension.json).
+   - **Sắp xếp thông minh theo trạng thái:** Quét file log chạy gần đây nhất của phiên bản hiện tại để gắn nhãn trạng thái Đúng/Sai cho từng case. Đẩy toàn bộ các case bị thất bại **`❌ [FAIL]`** lên đầu danh sách để chọn nhanh, các case chưa test **`⚪ [UNTESTED]`** ở giữa, và các case đã đạt **`✅ [PASS]`** xuống cuối danh sách.
+   - Nút **"Load Test Case to Chat"** sẽ tự động nạp chuỗi hội thoại/câu hỏi của case đó vào khung chat.
+4. **Version Log Summary (Bảng tóm tắt kết quả nâng cấp)**:
+   - Đọc trực tiếp từ file `version_log.csv` và hiển thị bảng so sánh điểm số trước/sau (Before/After metric) của các phiên bản mà không hiển thị các chuỗi mã băm thô gây nhiễu giao diện.
 
-### Main Panel (Khung Chat & Vết chạy Tool & Đánh giá)
+### Main Panel (Khung Chat, Trace và Đánh giá thời gian thực)
 1. **Khung Chat**:
-   - Sử dụng `st.chat_message` để hiển thị lịch sử hội thoại giữa Người dùng (User) và Agent.
+   - Sử dụng `st.chat_message` hiển thị trực quan lịch sử hội thoại giữa Người dùng và Agent.
 2. **Quá trình thực thi Tool (Tool Trace)**:
-   - Khi Agent chạy, hiển thị trực quan các vòng gọi tool (rounds) thông qua các hộp trạng thái (`st.status` hoặc `st.expander`):
-     - Vòng thực thi (`Round 1`, `Round 2`...).
+   - Khi Agent chạy, hiển thị trực quan các vòng gọi tool (rounds) thông qua các hộp trạng thái:
      - Tên Tool đang gọi + Tham số truyền vào (Arguments).
      - Kết quả phản hồi từ Tool (Success/Error).
-3. **Đánh giá Đúng/Sai (Verification Evaluation)**:
-   - Tái sử dụng logic so sánh `evaluate_phase_b` từ file `run_eval.py`.
-   - Nếu câu hỏi hiện tại khớp với một test case có sẵn:
-     - So sánh kết quả tool gọi thực tế của Agent với tool mong đợi (`expect`).
-     - Hiển thị bảng thông báo: **✅ ĐÚNG (CORRECT)** hoặc **❌ SAI (INCORRECT)** kèm mô tả chi tiết lỗi mismatch (ví dụ: *Thiếu gọi clarify*, *Truyền sai limit=10 thay vì 5*).
-     - Giúp người dùng thấy rõ sự cải thiện khi đổi phiên bản (`v0` -> `v3`) cho cùng một câu hỏi.
+3. **Đánh giá Đúng/Sai thời gian thực**:
+   - Tái sử dụng logic chấm điểm `evaluate_phase_b` từ file `run_eval.py`.
+   - Đối chiếu các tool thực tế mà Agent gọi với dữ liệu kỳ vọng (`expect`) của test case để báo kết quả **✅ CORRECT (ĐÚNG)** hoặc **❌ SAI (INCORRECT)** kèm chi tiết lỗi mismatch trực tiếp trên màn hình.
 4. **Lưu lịch sử (Transcripts)**:
-   - Mỗi phiên chat sẽ lưu lại thành file `.transcript.json` trong thư mục `transcripts/` để làm bằng chứng nộp bài (tương đương với `chat.py`).
+   - Tự động lưu lại transcript phiên chat dưới dạng tệp `.transcript.json` trong thư mục `transcripts/` để nộp bài.
 
 ---
 
-## 3. Kế hoạch kiểm thử & Xác thực UI
+## 3. Quy trình kiểm thử & Xác thực UI
 
 1. **Khởi chạy local**:
-   Chạy ứng dụng bằng lệnh:
    ```bash
    streamlit run app.py
    ```
 2. **Kiểm tra chức năng**:
    - Kiểm tra xem app có mở được tại `http://localhost:8501`.
-   - Chọn case `R12_confirm_before_send` ở phiên bản `v0` -> Chạy -> Xem trạng thái báo **SAI** (vì v0 tự gửi tin không hỏi xác nhận).
-   - Giữ nguyên case đó, đổi sang phiên bản `v3` -> Chạy -> Xem trạng thái báo **ĐÚNG** (vì v3 đã gọi clarify yes/no để hỏi lại).
-   - Kiểm tra trace của tool hiển thị chi tiết các arguments và kết quả.
+   - Chọn suite `group` -> Chọn case `G09_chat_meta_no_tool` ở phiên bản `v0` -> Chạy thử -> Xem kết quả báo lỗi `SAI` trên màn hình.
+   - Chuyển sang phiên bản `v4` -> Toàn bộ khung chat reset -> Load lại case đó -> Chạy thử -> Xem kết quả báo **ĐÚNG** nhờ các cập nhật prompt mới nhất.
