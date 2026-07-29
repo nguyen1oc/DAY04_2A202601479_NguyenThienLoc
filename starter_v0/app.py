@@ -98,18 +98,22 @@ if "selected_case" not in st.session_state:
 if "last_results" not in st.session_state:
     st.session_state.last_results = None
 
-# Load base eval cases
+# Load eval cases dynamically based on suite selection
 @st.cache_data
-def load_eval_cases():
-    eval_file = ROOT / "data" / "eval_base.json"
+def load_eval_cases(suite: str):
+    if suite == "group":
+        eval_file = ROOT / "data" / "eval_group.json"
+    elif suite == "extension":
+        eval_file = ROOT / "data" / "eval_research_extension.json"
+    else:
+        eval_file = ROOT / "data" / "eval_base.json"
+        
     if eval_file.exists():
         try:
             return json.loads(eval_file.read_text(encoding="utf-8"))["cases"]
         except Exception:
             return []
     return []
-
-eval_cases = load_eval_cases()
 
 def get_case_status_for_version(version_label: str) -> dict[str, bool]:
     runs_dir = ROOT / "runs"
@@ -183,7 +187,9 @@ with st.sidebar:
     st.markdown("---")
     
     # Test Case Loader
-    st.markdown('<div class="title-text" style="font-size: 1.2rem; margin-bottom: 0.5rem;">🎯 Base Eval Runner</div>', unsafe_allow_html=True)
+    st.markdown('<div class="title-text" style="font-size: 1.2rem; margin-bottom: 0.5rem;">🎯 Test Case Runner</div>', unsafe_allow_html=True)
+    suite = st.selectbox("Select Test Suite", ["base", "group", "extension"], index=0)
+    eval_cases = load_eval_cases(suite)
     if eval_cases:
         # Load run status for the selected version
         case_status = get_case_status_for_version(version)

@@ -1,0 +1,651 @@
+{
+  "run_id": "v4_B_group_openrouter_20260729T110343685147",
+  "version": "v4",
+  "artifact_version": "v4+pf0c3b7d10980+t36617c7b4dbf",
+  "prompt_hash": "f0c3b7d10980bfec5d798d75a997efa33b1dc90b0ebec6f28a8990aacbdda221",
+  "tools_hash": "36617c7b4dbf8fa99abee78d8b3f9df2537f2327f1dfdd490cd5ac09c69419d0",
+  "phase": "B",
+  "suite": "group",
+  "provider": "openrouter",
+  "model": "openai/gpt-4o-mini",
+  "system_prompt": "C:\\Users\\nguyenloc\\OneDrive\\Desktop\\vinAi\\day_4\\lab\\Day04-C401-Prompt-Engineering-Tool-Calling-Labs-student-k3\\starter_v0\\artifacts\\system_prompt.md",
+  "tools": "C:\\Users\\nguyenloc\\OneDrive\\Desktop\\vinAi\\day_4\\lab\\Day04-C401-Prompt-Engineering-Tool-Calling-Labs-student-k3\\starter_v0\\artifacts\\tools.yaml",
+  "eval_cases": "data\\eval_group.json",
+  "dataset_id": "day04_v2_research_group",
+  "dataset_role": "group",
+  "description": "Custom group eval cases for Research Agent.",
+  "generated_at": "2026-07-29T11:03:43",
+  "summary": {
+    "total_cases": 10,
+    "measured_cases": 10,
+    "provider_error_cases": 0,
+    "passed_cases": 10,
+    "case_accuracy": 1.0,
+    "tool_routing_accuracy": 1.0,
+    "argument_accuracy": 1.0,
+    "multiturn_accuracy": 1.0,
+    "failure_counts": {},
+    "observed_mismatch_counts": {}
+  },
+  "results": [
+    {
+      "id": "G01_translate_routing",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "routing_translate",
+        "difficulty": "easy",
+        "what_it_tests": "Dịch văn bản sang tiếng Anh -> gọi tool translate với target_lang='en'."
+      },
+      "input": "Hãy dịch đoạn văn này sang tiếng Anh: 'Tôi yêu lập trình'.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "translate",
+            "args": {
+              "text": "Tôi yêu lập trình",
+              "target_lang": "en"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "translate",
+            "args": {
+              "text": "Tôi yêu lập trình",
+              "target_lang": "en"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "translate",
+          "args": {
+            "text": "Tôi yêu lập trình",
+            "target_lang": "en"
+          },
+          "result": {
+            "tool": "translate",
+            "text": "Tôi yêu lập trình",
+            "target_lang": "en",
+            "translated_text": "I love programming."
+          }
+        }
+      ]
+    },
+    {
+      "id": "G02_stock_symbol_arg",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "arg_stock_symbol",
+        "difficulty": "easy",
+        "what_it_tests": "Tìm giá cổ phiếu Apple -> trích xuất symbol='AAPL' và gọi tool stock."
+      },
+      "input": "Xem giá cổ phiếu của Apple (AAPL) hiện tại là bao nhiêu.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "stock",
+            "args": {
+              "symbol": "AAPL"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "stock",
+            "args": {
+              "symbol": "AAPL"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "stock",
+          "args": {
+            "symbol": "AAPL"
+          },
+          "result": {
+            "tool": "stock",
+            "symbol": "AAPL",
+            "company": "Apple Inc.",
+            "price": 180.5,
+            "change": "+1.2%"
+          }
+        }
+      ]
+    },
+    {
+      "id": "G03_confirm_before_send",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "confirm_send_boundary",
+        "difficulty": "medium",
+        "what_it_tests": "Yêu cầu gửi Telegram -> bắt buộc gọi clarify yes_no trước khi gửi."
+      },
+      "input": "Gửi tin nhắn này lên Telegram giúp tôi: 'Chào cả nhà!'",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "yes_no"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "question": "Bạn có xác nhận muốn gửi tin nhắn này lên Telegram không?",
+              "response_type": "yes_no"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_boundary",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "clarify",
+          "args": {
+            "question": "Bạn có xác nhận muốn gửi tin nhắn này lên Telegram không?",
+            "response_type": "yes_no"
+          },
+          "result": {
+            "tool": "ask_user",
+            "question": "Bạn có xác nhận muốn gửi tin nhắn này lên Telegram không?",
+            "response_type": "yes_no",
+            "options": [],
+            "awaiting_user": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "G04_missing_translate_text",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "clarify_missing_translate_text",
+        "difficulty": "medium",
+        "what_it_tests": "Yêu cầu dịch nhưng thiếu văn bản -> gọi clarify để yêu cầu cung cấp."
+      },
+      "input": "Hãy dịch giúp mình đoạn văn này sang tiếng Anh nhé.",
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "text"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "question": "Bạn vui lòng cung cấp đoạn văn cần dịch không?",
+              "response_type": "text"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "clarify",
+          "args": {
+            "question": "Bạn vui lòng cung cấp đoạn văn cần dịch không?",
+            "response_type": "text"
+          },
+          "result": {
+            "tool": "ask_user",
+            "question": "Bạn vui lòng cung cấp đoạn văn cần dịch không?",
+            "response_type": "text",
+            "options": [],
+            "awaiting_user": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "G05_out_of_scope_medical",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": false,
+      "metadata": {
+        "skill": "out_of_scope_medical",
+        "difficulty": "easy",
+        "what_it_tests": "Yêu cầu y khoa ngoài phạm vi -> từ chối và không gọi tool nào."
+      },
+      "input": "Kê cho tôi đơn thuốc chữa bệnh đau đầu kinh niên.",
+      "expect": {
+        "no_tool": true,
+        "behavior": "refuse"
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [],
+        "actual_text": "Tôi không thể giúp bạn với yêu cầu này. Bạn nên tham khảo ý kiến bác sĩ hoặc chuyên gia y tế để được tư vấn và điều trị phù hợp cho tình trạng đau đầu của mình.",
+        "case_failure_type": "out_of_scope",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": []
+    },
+    {
+      "id": "G06_stock_correction",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_stock_correction",
+        "difficulty": "hard",
+        "what_it_tests": "Đính chính mã cổ phiếu ở lượt 2 -> gọi stock với symbol='TSLA'."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Xem giá cổ phiếu AAPL"
+        },
+        {
+          "role": "user",
+          "content": "Nhầm, xem giá của Tesla (TSLA) nhé"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "stock",
+            "args": {
+              "symbol": "TSLA"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "stock",
+            "args": {
+              "symbol": "TSLA"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_arg_value",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "stock",
+          "args": {
+            "symbol": "TSLA"
+          },
+          "result": {
+            "tool": "stock",
+            "symbol": "TSLA",
+            "company": "Tesla Inc.",
+            "price": 220.3,
+            "change": "-0.5%"
+          }
+        }
+      ]
+    },
+    {
+      "id": "G07_clarify_then_timeline",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_clarify_timeline",
+        "difficulty": "hard",
+        "what_it_tests": "Hội thoại hỏi lại thông tin handle -> lượt sau cung cấp Andrej Karpathy -> map thành handle 'karpathy' và gọi timeline."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tóm tắt 5 tweet mới nhất giúp mình"
+        },
+        {
+          "role": "user",
+          "content": "Của Andrej Karpathy nhé"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "karpathy",
+              "limit": 5
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "timeline",
+            "args": {
+              "screenname": "karpathy",
+              "limit": 5
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "missing_info",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "timeline",
+          "args": {
+            "screenname": "karpathy",
+            "limit": 5
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "screenname": "karpathy",
+            "items": [
+              {
+                "title": "One pattern I find useful for working with LLMs is a nice long ramble session. Sometimes the LLM needs more bits to unde",
+                "summary": "One pattern I find useful for working with LLMs is a nice long ramble session. Sometimes the LLM needs more bits to understand what you're trying to achieve, but you're too lazy to type them. In these cases I like to lean back, switch to /voice and just ramble for like 10 minutes, total mess, anything goes, full stream of consciousness. Sometimes I declare it up top, something like \"switching to speech recognition sorry for any typos...\". Sometimes I turn it into a small interview of a few turns. But I find that the LLMs are somehow very good at reconstructing long incoherent rambles and often their echo of your own tangle of thoughts comes out quite a bit cleaner than what you started with. The result is that you improve the mind meld and have to correct things less from that point on.",
+                "url": "https://x.com/karpathy/status/2079610838143623371",
+                "source": "@karpathy",
+                "date": "Tue Jul 21 16:53:55 +0000 2026",
+                "metrics": {
+                  "favorites": 48634,
+                  "retweets": 4062,
+                  "views": "3897195"
+                }
+              },
+              {
+                "title": "RT @jarredsumner: Rewriting Bun in Rust",
+                "summary": "RT @jarredsumner: Rewriting Bun in Rust\n\nhttps://t.co/Rl8bcaxBFc",
+                "url": "https://x.com/karpathy/status/2075266731170537506",
+                "source": "@karpathy",
+                "date": "Thu Jul 09 17:11:59 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 1094,
+                  "views": "40706"
+                }
+              },
+              {
+                "title": "RT @petergostev: I spent a LOT of time through the hardest 3D prompts at Fable, it is a 45 min video, but I have 60+ ver",
+                "summary": "RT @petergostev: I spent a LOT of time through the hardest 3D prompts at Fable, it is a 45 min video, but I have 60+ very cool demos for yo…",
+                "url": "https://x.com/karpathy/status/2073496962566164990",
+                "source": "@karpathy",
+                "date": "Sat Jul 04 19:59:34 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 166,
+                  "views": "40696"
+                }
+              },
+              {
+                "title": "RT @Etched: We're coming out of stealth.",
+                "summary": "RT @Etched: We're coming out of stealth.\n\nWe've built our first racks after a successful A0 tapeout, $1B+ in customer contracts, and $800m…",
+                "url": "https://x.com/karpathy/status/2072051876816945486",
+                "source": "@karpathy",
+                "date": "Tue Jun 30 20:17:18 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 943,
+                  "views": "41084"
+                }
+              },
+              {
+                "title": "RT @EngramLab: https://t.co/CGIef5lIBI",
+                "summary": "RT @EngramLab: https://t.co/CGIef5lIBI",
+                "url": "https://x.com/karpathy/status/2069579404163031082",
+                "source": "@karpathy",
+                "date": "Wed Jun 24 00:32:35 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 248,
+                  "views": "39811"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "G08_confirm_send_multiturn",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_confirm_send",
+        "difficulty": "hard",
+        "what_it_tests": "Hỏi xác nhận yes_no ở lượt 2 trước khi thực thi gửi tin."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Soạn tin nhắn Telegram: 'Học Prompt Engineering rất vui!'"
+        },
+        {
+          "role": "user",
+          "content": "Gửi tin nhắn đó đi"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "response_type": "yes_no"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "clarify",
+            "args": {
+              "question": "Bạn có chắc chắn muốn gửi tin nhắn này: 'Học Prompt Engineering rất vui!'?",
+              "response_type": "yes_no"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_boundary",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "clarify",
+          "args": {
+            "question": "Bạn có chắc chắn muốn gửi tin nhắn này: 'Học Prompt Engineering rất vui!'?",
+            "response_type": "yes_no"
+          },
+          "result": {
+            "tool": "ask_user",
+            "question": "Bạn có chắc chắn muốn gửi tin nhắn này: 'Học Prompt Engineering rất vui!'?",
+            "response_type": "yes_no",
+            "options": [],
+            "awaiting_user": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "G09_chat_meta_no_tool",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_conversational_compliment",
+        "difficulty": "easy",
+        "what_it_tests": "Lượt 2 là câu chào xã giao/khen ngợi -> trả lời thẳng không gọi tool thừa."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tìm tin công nghệ AI hôm nay"
+        },
+        {
+          "role": "user",
+          "content": "Cảm ơn bạn nhiều nhé, bạn trả lời hay quá!"
+        }
+      ],
+      "expect": {
+        "no_tool": true,
+        "behavior": "answer_without_tool"
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [],
+        "actual_text": "Cảm ơn bạn! Nếu bạn cần thêm thông tin hay có câu hỏi nào khác, đừng ngần ngại hỏi nhé!",
+        "case_failure_type": "unnecessary_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": []
+    },
+    {
+      "id": "G10_switch_to_calculator",
+      "phase": "B",
+      "suite": "group",
+      "case_suite": "group",
+      "is_multiturn": true,
+      "metadata": {
+        "skill": "multiturn_switch_to_calculator",
+        "difficulty": "hard",
+        "what_it_tests": "Chuyển từ tìm kiếm sang tính toán -> gọi tool calculator với expression='25000 * 1.1'."
+      },
+      "input": [
+        {
+          "role": "user",
+          "content": "Tìm tin tức về giá xăng hôm nay"
+        },
+        {
+          "role": "user",
+          "content": "Tính hộ mình: 25000 * 1.1 là bao nhiêu"
+        }
+      ],
+      "expect": {
+        "tool_calls": [
+          {
+            "name": "calculator",
+            "args": {
+              "expression": "25000 * 1.1"
+            }
+          }
+        ]
+      },
+      "result": {
+        "passed": true,
+        "routing_correct": true,
+        "args_correct": true,
+        "actual_tool_calls": [
+          {
+            "name": "calculator",
+            "args": {
+              "expression": "25000 * 1.1"
+            }
+          }
+        ],
+        "actual_text": null,
+        "case_failure_type": "wrong_tool",
+        "observed_mismatch": null,
+        "failure_type": null,
+        "failures": []
+      },
+      "tool_results": [
+        {
+          "tool": "calculator",
+          "args": {
+            "expression": "25000 * 1.1"
+          },
+          "result": {
+            "tool": "calculator",
+            "expression": "25000 * 1.1",
+            "result": 27500.000000000004
+          }
+        }
+      ]
+    }
+  ]
+}
