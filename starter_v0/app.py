@@ -173,28 +173,6 @@ with st.sidebar:
     openai_tools = to_openai_tools(tool_declarations)
     artifact_version = build_artifact_version(version, prompt_file, tools_file)
     
-    # Version Log Summary (replace the hashes layout)
-    st.markdown('<div class="title-text" style="font-size: 1.0rem; margin-top: 0.5rem; margin-bottom: 0.2rem;">📈 Version Log Summary</div>', unsafe_allow_html=True)
-    def get_version_log_summary() -> str:
-        log_file = ROOT / "artifacts" / "version_log.csv"
-        if not log_file.exists():
-            return "No version log file found."
-        try:
-            import csv
-            with open(log_file, "r", encoding="utf-8") as f:
-                reader = csv.DictReader(f)
-                rows = list(reader)
-            if not rows:
-                return "Version log is empty."
-            md = "| Ver | Author | Metric | Before | After |\n|---|---|---|---|---|\n"
-            for row in rows:
-                md += f"| **{row.get('version')}** | {row.get('author')} | {row.get('metric_name')} | {row.get('metric_before')} | {row.get('metric_after')} |\n"
-            return md
-        except Exception as e:
-            return f"Error loading log: {e}"
-            
-    st.markdown(get_version_log_summary())
-    
     with st.expander("👁️ View System Prompt & Tools"):
         tabs = st.tabs(["System Prompt", "Tools Decl"])
         with tabs[0]:
@@ -277,6 +255,30 @@ with st.sidebar:
                 st.rerun()
         else:
             st.session_state.selected_case = None
+            
+    st.markdown("---")
+            
+    # Version Log Summary (moved here)
+    st.markdown('<div class="title-text" style="font-size: 1.2rem; margin-bottom: 0.5rem;">📈 Version Log Summary</div>', unsafe_allow_html=True)
+    def get_version_log_summary() -> str:
+        log_file = ROOT / "artifacts" / "version_log.csv"
+        if not log_file.exists():
+            return "No version log file found."
+        try:
+            import csv
+            with open(log_file, "r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                rows = list(reader)
+            if not rows:
+                return "Version log is empty."
+            md = "| Ver | Author | Metric | Before | After |\n|---|---|---|---|---|\n"
+            for row in rows:
+                md += f"| **{row.get('version')}** | {row.get('author')} | {row.get('metric_name')} | {row.get('metric_before')} | {row.get('metric_after')} |\n"
+            return md
+        except Exception as e:
+            return f"Error loading log: {e}"
+            
+    st.markdown(get_version_log_summary())
 
     if st.button("🧹 Clear Chat History"):
         st.session_state.messages = []
