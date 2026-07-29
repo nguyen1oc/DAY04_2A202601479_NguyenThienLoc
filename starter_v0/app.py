@@ -226,7 +226,6 @@ with st.sidebar:
         
         if selected_option[0] != "None":
             case = selected_option[0]
-            st.session_state.selected_case = case
             
             # Show case details
             difficulty = case["metadata"].get("difficulty", "medium")
@@ -242,7 +241,8 @@ with st.sidebar:
             """, unsafe_allow_html=True)
             
             if st.button("🚀 Load Test Case to Chat"):
-                # Clear existing messages
+                # Clear existing messages and set the active case
+                st.session_state.selected_case = case
                 st.session_state.messages = []
                 st.session_state.history = []
                 st.session_state.last_results = None
@@ -259,8 +259,6 @@ with st.sidebar:
                     # Single turn load
                     st.session_state.active_input = case.get("query") or case.get("input", "")
                 st.rerun()
-        else:
-            st.session_state.selected_case = None
             
     st.markdown("---")
             
@@ -290,6 +288,7 @@ with st.sidebar:
         st.session_state.messages = []
         st.session_state.history = []
         st.session_state.last_results = None
+        st.session_state.selected_case = None
         st.session_state.transcript_id = f"st_{datetime.now().strftime('%Y%m%dT%H%M%S%f')}"
         st.rerun()
 
@@ -298,6 +297,15 @@ with st.sidebar:
 # -------------------------------------------------------------
 st.markdown('<div class="main-title">🤖 Research Agent Workspace</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="subtitle-text">Interactive playground with trace logging & verification evaluation. Running on <b>{model_name}</b> (Version <b>{version}</b>).</div>', unsafe_allow_html=True)
+
+# Display active loaded test case indicator if present
+if st.session_state.selected_case:
+    active_case = st.session_state.selected_case
+    st.markdown(f"""
+    <div style="background-color: rgba(75, 150, 255, 0.15); border: 1px solid rgba(75, 150, 255, 0.3); border-radius: 8px; padding: 8px 12px; margin-top: 10px; margin-bottom: 15px; font-size: 0.9rem;">
+        📌 <b>Active Loaded Test Case:</b> <code>{active_case['id']}</code> | <b>Skill:</b> {active_case['metadata'].get('skill', 'n/a')}
+    </div>
+    """, unsafe_allow_html=True)
 
 # Create transcripts path
 transcripts_dir = ROOT / "transcripts"
