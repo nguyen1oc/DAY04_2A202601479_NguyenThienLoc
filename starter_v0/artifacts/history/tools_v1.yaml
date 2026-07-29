@@ -1,0 +1,111 @@
+# starter_v0 — tool declarations.
+tools:
+  # ---------------- Core tools ----------------
+  - name: clarify
+    description: "Yêu cầu người dùng làm rõ khi thiếu thông tin quan trọng hoặc xác nhận hành động nhạy cảm."
+    parameters:
+      type: object
+      properties:
+        question: {type: string, default: "", description: "Câu hỏi gửi đến người dùng."}
+        response_type: {type: string, enum: [text, yes_no, choice], default: "text", description: "Kiểu trả lời mong muốn: 'text' cho câu trả lời tự do, 'yes_no' cho việc xác nhận có/không, 'choice' cho trắc nghiệm."}
+        options: {type: array, default: [], items: {type: string}, description: "Các lựa chọn trắc nghiệm nếu response_type là 'choice'."}
+      required: [question]
+
+  - name: timeline
+    description: "Lấy các bài đăng gần đây của một tài khoản cụ thể."
+    parameters:
+      type: object
+      properties:
+        screenname: {type: string, default: "", description: "Tên tài khoản (Twitter/X handle). Ví dụ: 'sama' cho Sam Altman, 'elonmusk' cho Elon Musk, 'karpathy' cho Andrej Karpathy. Bắt buộc phải có."}
+        limit: {type: integer, default: 5, description: "Số lượng bài đăng cần lấy."}
+      required: [screenname]
+
+  - name: social_search
+    description: "Tìm kiếm các bài đăng trên mạng xã hội theo từ khóa chủ đề."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Từ khóa tìm kiếm sạch (ví dụ: 'AI', không có các từ phụ như 'news' hay 'tweets')."}
+        search_type: {type: string, enum: [Latest, Top], default: "Latest", description: "Cách sắp xếp: 'Latest' cho tin mới nhất, 'Top' cho tin phổ biến/nổi bật nhất."}
+        limit: {type: integer, default: 5, description: "Số lượng bài đăng tối đa cần lấy."}
+      required: [query]
+
+  - name: lookup
+    description: "Tra cứu thông tin/tin tức trên internet."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Từ khóa truy vấn tìm kiếm sạch trên internet (ví dụ: 'AI')."}
+        topic: {type: string, enum: [general, news], default: "general", description: "Phân loại: 'general' cho tìm kiếm thông tin chung, 'news' cho tin tức thời sự/mới nhất."}
+        timeframe: {type: string, enum: [day, week, month, year], default: "week", description: "Khoảng thời gian giới hạn: 'day' cho hôm nay, 'week' cho tuần này, 'month' cho tháng này, 'year' cho năm nay."}
+        max_results: {type: integer, default: 5, description: "Số lượng kết quả tối đa."}
+      required: [query]
+
+  - name: fetch
+    description: "Lấy nội dung chi tiết từ một URL cụ thể."
+    parameters:
+      type: object
+      properties:
+        url: {type: string, default: "", description: "Địa chỉ URL cụ thể cần lấy nội dung."}
+      required: [url]
+
+  - name: format
+    description: "Trình bày dữ liệu đã có thành văn bản markdown digest chuyên nghiệp."
+    parameters:
+      type: object
+      properties:
+        items:
+          type: array
+          default: []
+          description: "Danh sách item chứa thông tin chi tiết."
+          items:
+            type: object
+            properties:
+              title: {type: string}
+              url: {type: string}
+              source: {type: string}
+              summary: {type: string}
+              section: {type: string}
+        template: {type: string, enum: [brief, sections, bullets, thread, daily_ai_vn], default: "sections", description: "Khuôn mẫu trình bày."}
+        headline: {type: string, default: "", description: "Tiêu đề của digest."}
+      required: [items, template]
+
+  # ---------------- Bonus tools ----------------
+  - name: send
+    description: "Gửi một đoạn văn bản/bản tin lên Telegram channel."
+    parameters:
+      type: object
+      properties:
+        text: {type: string, default: "", description: "Nội dung văn bản cần gửi."}
+        confirmed: {type: boolean, default: false, description: "Cờ xác nhận. Phải đặt là true nếu người dùng đã xác nhận hoặc đã đồng ý qua câu hỏi trước đó."}
+      required: [text]
+
+  - name: policy
+    description: "Tìm kiếm thông tin trong tài liệu chính sách nội bộ của công ty."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Truy vấn tìm kiếm."}
+        policy_area: {type: string, enum: [all, ai_research, source_citation, data_privacy, external_publishing, tool_usage], default: "all", description: "Nhóm chính sách cần tra cứu."}
+        top_k: {type: integer, default: 3, description: "Số lượng kết quả cần lấy."}
+      required: [query]
+
+  - name: papers
+    description: "Tìm kiếm các bài báo khoa học trên arXiv."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Từ khóa hoặc truy vấn tìm kiếm."}
+        max_results: {type: integer, default: 5, description: "Số lượng bài báo tối đa."}
+        sort_by: {type: string, enum: [relevance, lastUpdatedDate, submittedDate], default: "relevance", description: "Sắp xếp theo độ liên quan hoặc thời gian."}
+      required: [query]
+
+  - name: paper_text
+    description: "Lấy nội dung văn bản chi tiết của một bài báo từ arXiv."
+    parameters:
+      type: object
+      properties:
+        arxiv_url: {type: string, default: "", description: "ID bài báo hoặc địa chỉ URL arXiv cụ thể."}
+        max_pages: {type: integer, default: 5, description: "Số lượng trang tối đa cần trích xuất."}
+        max_chars: {type: integer, default: 8000, description: "Số lượng ký tự tối đa cần trích xuất."}
+      required: [arxiv_url]
