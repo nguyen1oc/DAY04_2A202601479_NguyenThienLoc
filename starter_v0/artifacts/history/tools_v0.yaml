@@ -1,1 +1,118 @@
-﻿# starter_v0 ΓÇö tool declarations (intentionally vague). # Names and descriptions here are a rough first draft. Routing rules, name->handle # mapping, arg conventions (news/timeframe/Top), and the send-confirmation boundary # are NOT spelled out anywhere yet. Your job is to make these declarations + the # system prompt good enough that the agent routes correctly on the eval. # # If you rename a tool, keep the name in sync across: #   this file  ->  tools/__init__.py (TOOL_FUNCTIONS)  ->  data/eval_base.json + data/eval_research_extension.json tools:   # ---------------- Core tools ----------------   - name: clarify     description: "Gß╗¡i mß╗Öt c├óu hß╗Åi cho ng╞░ß╗¥i d├╣ng."     parameters:       type: object       properties:         question: {type: string, default: "", description: "C├óu hß╗Åi"}         response_type: {type: string, enum: [text, yes_no, choice], default: "text", description: "Kiß╗âu trß║ú lß╗¥i"}         options: {type: array, default: [], items: {type: string}, description: "C├íc lß╗▒a chß╗ìn"}       required: [question]    - name: timeline     description: "Lß║Ñy c├íc b├ái ─æ─âng gß║ºn ─æ├óy."     parameters:       type: object       properties:         screenname: {type: string, default: "", description: "T├¬n t├ái khoß║ún"}         limit: {type: integer, default: 5, description: "Sß╗æ l╞░ß╗úng"}       required: [screenname]    - name: social_search     description: "T├¼m tr├¬n mß║íng x├ú hß╗Öi."     parameters:       type: object       properties:         query: {type: string, default: "", description: "Tß╗½ kh├│a"}         search_type: {type: string, enum: [Latest, Top], default: "Latest", description: "C├ích sß║»p xß║┐p"}         limit: {type: integer, default: 5, description: "Sß╗æ l╞░ß╗úng"}       required: [query]    - name: lookup     description: "Tra cß╗⌐u th├┤ng tin tr├¬n internet."     parameters:       type: object       properties:         query: {type: string, default: "", description: "Truy vß║Ñn"}         topic: {type: string, enum: [general, news], default: "general", description: "Ph├ón loß║íi"}         timeframe: {type: string, enum: [day, week, month, year], default: "week", description: "Khoß║úng thß╗¥i gian"}         max_results: {type: integer, default: 5, description: "Sß╗æ kß║┐t quß║ú"}       required: [query]    - name: fetch     description: "Lß║Ñy nß╗Öi dung tß╗½ mß╗Öt ─æß╗ïa chß╗ë."     parameters:       type: object       properties:         url: {type: string, default: "", description: "─Éß╗ïa chß╗ë"}       required: [url]    - name: format     description: "Tr├¼nh b├áy dß╗» liß╗çu ─æ├ú c├│ th├ánh v─ân bß║ún."     parameters:       type: object       properties:         items:           type: array           default: []           description: "Danh s├ích item"           items:             type: object             properties:               title: {type: string}               url: {type: string}               source: {type: string}               summary: {type: string}               section: {type: string}         template: {type: string, enum: [brief, sections, bullets, thread, daily_ai_vn], default: "sections", description: "Khu├┤n"}         headline: {type: string, default: "", description: "Ti├¬u ─æß╗ü"}       required: [items, template]    # ---------------- Bonus tools ----------------   - name: send     description: "Gß╗¡i mß╗Öt ─æoß║ín v─ân bß║ún ─æi."     parameters:       type: object       properties:         text: {type: string, default: "", description: "Nß╗Öi dung"}         confirmed: {type: boolean, default: false, description: "Cß╗¥ x├íc nhß║¡n"}       required: [text]    - name: policy     description: "T├¼m trong t├ái liß╗çu nß╗Öi bß╗Ö."     parameters:       type: object       properties:         query: {type: string, default: "", description: "Truy vß║Ñn"}         policy_area: {type: string, enum: [all, ai_research, source_citation, data_privacy, external_publishing, tool_usage], default: "all", description: "Nh├│m"}         top_k: {type: integer, default: 3, description: "Sß╗æ mß╗Ñc"}       required: [query]    - name: papers     description: "T├¼m b├ái b├ío khoa hß╗ìc."     parameters:       type: object       properties:         query: {type: string, default: "", description: "Tß╗½ kh├│a"}         max_results: {type: integer, default: 5, description: "Sß╗æ l╞░ß╗úng"}         sort_by: {type: string, enum: [relevance, lastUpdatedDate, submittedDate], default: "relevance", description: "Sß║»p xß║┐p"}       required: [query]    - name: paper_text     description: "Lß║Ñy nß╗Öi dung text cß╗ºa mß╗Öt b├ái b├ío."     parameters:       type: object       properties:         arxiv_url: {type: string, default: "", description: "ID hoß║╖c ─æß╗ïa chß╗ë"}         max_pages: {type: integer, default: 5, description: "Sß╗æ trang"}         max_chars: {type: integer, default: 8000, description: "Sß╗æ k├╜ tß╗▒"}       required: [arxiv_url]
+# starter_v0 — tool declarations (intentionally vague).
+# Names and descriptions here are a rough first draft. Routing rules, name->handle
+# mapping, arg conventions (news/timeframe/Top), and the send-confirmation boundary
+# are NOT spelled out anywhere yet. Your job is to make these declarations + the
+# system prompt good enough that the agent routes correctly on the eval.
+#
+# If you rename a tool, keep the name in sync across:
+#   this file  ->  tools/__init__.py (TOOL_FUNCTIONS)  ->  data/eval_base.json + data/eval_research_extension.json
+tools:
+  # ---------------- Core tools ----------------
+  - name: clarify
+    description: "Gửi một câu hỏi cho người dùng."
+    parameters:
+      type: object
+      properties:
+        question: {type: string, default: "", description: "Câu hỏi"}
+        response_type: {type: string, enum: [text, yes_no, choice], default: "text", description: "Kiểu trả lời"}
+        options: {type: array, default: [], items: {type: string}, description: "Các lựa chọn"}
+      required: [question]
+
+  - name: timeline
+    description: "Lấy các bài đăng gần đây."
+    parameters:
+      type: object
+      properties:
+        screenname: {type: string, default: "", description: "Tên tài khoản"}
+        limit: {type: integer, default: 5, description: "Số lượng"}
+      required: [screenname]
+
+  - name: social_search
+    description: "Tìm trên mạng xã hội."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Từ khóa"}
+        search_type: {type: string, enum: [Latest, Top], default: "Latest", description: "Cách sắp xếp"}
+        limit: {type: integer, default: 5, description: "Số lượng"}
+      required: [query]
+
+  - name: lookup
+    description: "Tra cứu thông tin trên internet."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Truy vấn"}
+        topic: {type: string, enum: [general, news], default: "general", description: "Phân loại"}
+        timeframe: {type: string, enum: [day, week, month, year], default: "week", description: "Khoảng thời gian"}
+        max_results: {type: integer, default: 5, description: "Số kết quả"}
+      required: [query]
+
+  - name: fetch
+    description: "Lấy nội dung từ một địa chỉ."
+    parameters:
+      type: object
+      properties:
+        url: {type: string, default: "", description: "Địa chỉ"}
+      required: [url]
+
+  - name: format
+    description: "Trình bày dữ liệu đã có thành văn bản."
+    parameters:
+      type: object
+      properties:
+        items:
+          type: array
+          default: []
+          description: "Danh sách item"
+          items:
+            type: object
+            properties:
+              title: {type: string}
+              url: {type: string}
+              source: {type: string}
+              summary: {type: string}
+              section: {type: string}
+        template: {type: string, enum: [brief, sections, bullets, thread, daily_ai_vn], default: "sections", description: "Khuôn"}
+        headline: {type: string, default: "", description: "Tiêu đề"}
+      required: [items, template]
+
+  # ---------------- Bonus tools ----------------
+  - name: send
+    description: "Gửi một đoạn văn bản đi."
+    parameters:
+      type: object
+      properties:
+        text: {type: string, default: "", description: "Nội dung"}
+        confirmed: {type: boolean, default: false, description: "Cờ xác nhận"}
+      required: [text]
+
+  - name: policy
+    description: "Tìm trong tài liệu nội bộ."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Truy vấn"}
+        policy_area: {type: string, enum: [all, ai_research, source_citation, data_privacy, external_publishing, tool_usage], default: "all", description: "Nhóm"}
+        top_k: {type: integer, default: 3, description: "Số mục"}
+      required: [query]
+
+  - name: papers
+    description: "Tìm bài báo khoa học."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Từ khóa"}
+        max_results: {type: integer, default: 5, description: "Số lượng"}
+        sort_by: {type: string, enum: [relevance, lastUpdatedDate, submittedDate], default: "relevance", description: "Sắp xếp"}
+      required: [query]
+
+  - name: paper_text
+    description: "Lấy nội dung text của một bài báo."
+    parameters:
+      type: object
+      properties:
+        arxiv_url: {type: string, default: "", description: "ID hoặc địa chỉ"}
+        max_pages: {type: integer, default: 5, description: "Số trang"}
+        max_chars: {type: integer, default: 8000, description: "Số ký tự"}
+      required: [arxiv_url]

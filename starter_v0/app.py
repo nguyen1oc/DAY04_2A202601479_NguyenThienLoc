@@ -147,6 +147,16 @@ with st.sidebar:
     st.markdown('<div class="title-text" style="font-size: 1.2rem; margin-bottom: 0.5rem;">🔖 Select Prompt/Tool Version</div>', unsafe_allow_html=True)
     version = st.selectbox("Version", ["v0", "v1", "v2", "v3"], index=3)
     
+    # Reset chat on version change
+    if "current_version" not in st.session_state:
+        st.session_state.current_version = version
+    elif st.session_state.current_version != version:
+        st.session_state.current_version = version
+        st.session_state.messages = []
+        st.session_state.history = []
+        st.session_state.last_results = None
+        st.session_state.transcript_id = f"st_{datetime.now().strftime('%Y%m%dT%H%M%S%f')}"
+        
     # Load corresponding files from history
     history_dir = ARTIFACTS_DIR / "history"
     prompt_file = history_dir / f"system_prompt_{version}.md"
@@ -163,14 +173,27 @@ with st.sidebar:
     openai_tools = to_openai_tools(tool_declarations)
     artifact_version = build_artifact_version(version, prompt_file, tools_file)
     
-    # Show metadata of version
-    st.markdown(f"""
-    <div class="metric-card">
-        <strong>Artifact Version:</strong><br><span class="hash-badge">{artifact_version.artifact_version}</span><br>
-        <strong>Prompt Hash:</strong><br><span class="hash-badge">{artifact_version.prompt_hash[:12]}...</span><br>
-        <strong>Tools Hash:</strong><br><span class="hash-badge">{artifact_version.tools_hash[:12]}...</span>
-    </div>
-    """, unsafe_allow_html=True)
+    # Version Log Summary (replace the hashes layout)
+    st.markdown('<div class="title-text" style="font-size: 1.0rem; margin-top: 0.5rem; margin-bottom: 0.2rem;">📈 Version Log Summary</div>', unsafe_allow_html=True)
+    def get_version_log_summary() -> str:
+        log_file = ROOT / "artifacts" / "version_log.csv"
+        if not log_file.exists():
+            return "No version log file found."
+        try:
+            import csv
+            with open(log_file, "r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                rows = list(reader)
+            if not rows:
+                return "Version log is empty."
+            md = "| Ver | Author | Metric | Before | After |\n|---|---|---|---|---|\n"
+            for row in rows:
+                md += f"| **{row.get('version')}** | {row.get('author')} | {row.get('metric_name')} | {row.get('metric_before')} | {row.get('metric_after')} |\n"
+            return md
+        except Exception as e:
+            return f"Error loading log: {e}"
+            
+    st.markdown(get_version_log_summary())
     
     with st.expander("👁️ View System Prompt & Tools"):
         tabs = st.tabs(["System Prompt", "Tools Decl"])
