@@ -145,7 +145,7 @@ with st.sidebar:
     
     # Version Selector
     st.markdown('<div class="title-text" style="font-size: 1.2rem; margin-bottom: 0.5rem;">🔖 Select Prompt/Tool Version</div>', unsafe_allow_html=True)
-    version = st.selectbox("Version", ["v0", "v1", "v2", "v3"], index=3)
+    version = st.selectbox("Version", ["v0", "v1", "v2", "v3", "v4"], index=4)
     
     # Reset chat on version change
     if "current_version" not in st.session_state:

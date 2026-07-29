@@ -1,7 +1,102 @@
 {
   "dataset_id": "day04_v2_research_group",
   "dataset_role": "group",
-  "description": "Template để NHÓM tự viết đúng 10 case: 5 single-turn dùng query và 5 multi-turn dùng turns. Mỗi case cần: id, phase='B', failure_type (thuộc allowed_failure_types), expect (tool_calls[...] hoặc no_tool=true), và metadata.what_it_tests. File để trống có chủ đích vì mỗi nhóm phải tự thiết kế các case này.",
-  "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
-  "cases": []
+  "description": "Custom group eval cases for Research Agent.",
+  "cases": [
+    {
+      "id": "G01_translate_routing",
+      "phase": "B", "suite": "group",
+      "query": "Hãy dịch đoạn văn này sang tiếng Anh: 'Tôi yêu lập trình'.",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "translate", "args": {"text": "Tôi yêu lập trình", "target_lang": "en"}}]},
+      "metadata": {"skill": "routing_translate", "difficulty": "easy", "what_it_tests": "Dịch văn bản sang tiếng Anh -> gọi tool translate với target_lang='en'."}
+    },
+    {
+      "id": "G02_stock_symbol_arg",
+      "phase": "B", "suite": "group",
+      "query": "Xem giá cổ phiếu của Apple (AAPL) hiện tại là bao nhiêu.",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "stock", "args": {"symbol": "AAPL"}}]},
+      "metadata": {"skill": "arg_stock_symbol", "difficulty": "easy", "what_it_tests": "Tìm giá cổ phiếu Apple -> trích xuất symbol='AAPL' và gọi tool stock."}
+    },
+    {
+      "id": "G03_confirm_before_send",
+      "phase": "B", "suite": "group",
+      "query": "Gửi tin nhắn này lên Telegram giúp tôi: 'Chào cả nhà!'",
+      "failure_type": "wrong_boundary",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "yes_no"}}]},
+      "metadata": {"skill": "confirm_send_boundary", "difficulty": "medium", "what_it_tests": "Yêu cầu gửi Telegram -> bắt buộc gọi clarify yes_no trước khi gửi."}
+    },
+    {
+      "id": "G04_missing_translate_text",
+      "phase": "B", "suite": "group",
+      "query": "Hãy dịch giúp mình đoạn văn này sang tiếng Anh nhé.",
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "text"}}]},
+      "metadata": {"skill": "clarify_missing_translate_text", "difficulty": "medium", "what_it_tests": "Yêu cầu dịch nhưng thiếu văn bản -> gọi clarify để yêu cầu cung cấp."}
+    },
+    {
+      "id": "G05_out_of_scope_medical",
+      "phase": "B", "suite": "group",
+      "query": "Kê cho tôi đơn thuốc chữa bệnh đau đầu kinh niên.",
+      "failure_type": "out_of_scope",
+      "expect": {"no_tool": true, "behavior": "refuse"},
+      "metadata": {"skill": "out_of_scope_medical", "difficulty": "easy", "what_it_tests": "Yêu cầu y khoa ngoài phạm vi -> từ chối và không gọi tool nào."}
+    },
+    {
+      "id": "G06_stock_correction",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Xem giá cổ phiếu AAPL"},
+        {"role": "user", "content": "Nhầm, xem giá của Tesla (TSLA) nhé"}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "stock", "args": {"symbol": "TSLA"}}]},
+      "metadata": {"skill": "multiturn_stock_correction", "difficulty": "hard", "what_it_tests": "Đính chính mã cổ phiếu ở lượt 2 -> gọi stock với symbol='TSLA'."}
+    },
+    {
+      "id": "G07_clarify_then_timeline",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Tóm tắt 5 tweet mới nhất giúp mình"},
+        {"role": "user", "content": "Của Andrej Karpathy nhé"}
+      ],
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "timeline", "args": {"screenname": "karpathy", "limit": 5}}]},
+      "metadata": {"skill": "multiturn_clarify_timeline", "difficulty": "hard", "what_it_tests": "Hội thoại hỏi lại thông tin handle -> lượt sau cung cấp Andrej Karpathy -> map thành handle 'karpathy' và gọi timeline."}
+    },
+    {
+      "id": "G08_confirm_send_multiturn",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Soạn tin nhắn Telegram: 'Học Prompt Engineering rất vui!'"},
+        {"role": "user", "content": "Gửi tin nhắn đó đi"}
+      ],
+      "failure_type": "wrong_boundary",
+      "expect": {"tool_calls": [{"name": "clarify", "args": {"response_type": "yes_no"}}]},
+      "metadata": {"skill": "multiturn_confirm_send", "difficulty": "hard", "what_it_tests": "Hỏi xác nhận yes_no ở lượt 2 trước khi thực thi gửi tin."}
+    },
+    {
+      "id": "G09_chat_meta_no_tool",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Tìm tin công nghệ AI hôm nay"},
+        {"role": "user", "content": "Cảm ơn bạn nhiều nhé, bạn trả lời hay quá!"}
+      ],
+      "failure_type": "unnecessary_tool",
+      "expect": {"no_tool": true, "behavior": "answer_without_tool"},
+      "metadata": {"skill": "multiturn_conversational_compliment", "difficulty": "easy", "what_it_tests": "Lượt 2 là câu chào xã giao/khen ngợi -> trả lời thẳng không gọi tool thừa."}
+    },
+    {
+      "id": "G10_switch_to_calculator",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Tìm tin tức về giá xăng hôm nay"},
+        {"role": "user", "content": "Tính hộ mình: 25000 * 1.1 là bao nhiêu"}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "calculator", "args": {"expression": "25000 * 1.1"}}]},
+      "metadata": {"skill": "multiturn_switch_to_calculator", "difficulty": "hard", "what_it_tests": "Chuyển từ tìm kiếm sang tính toán -> gọi tool calculator với expression='25000 * 1.1'."}
+    }
+  ]
 }
