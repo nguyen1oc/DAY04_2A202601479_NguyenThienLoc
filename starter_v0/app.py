@@ -111,6 +111,24 @@ def load_eval_cases():
 
 eval_cases = load_eval_cases()
 
+def get_case_status_for_version(version_label: str) -> dict[str, bool]:
+    runs_dir = ROOT / "runs"
+    if not runs_dir.exists():
+        return {}
+    # Find all json files matching {version_label}_*
+    run_files = list(runs_dir.glob(f"{version_label}_*.json"))
+    if not run_files:
+        return {}
+    # Sort by modification time to get the latest run of that version
+    run_files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    latest_run_file = run_files[0]
+    try:
+        data = json.loads(latest_run_file.read_text(encoding="utf-8"))
+        # Map case_id -> passed (True/False)
+        return {result["id"]: result["result"]["passed"] for result in data.get("results", [])}
+    except Exception:
+        return {}
+
 # -------------------------------------------------------------
 # 3. Sidebar - Cấu hình & Phiên bản
 # -------------------------------------------------------------
@@ -166,11 +184,41 @@ with st.sidebar:
     # Test Case Loader
     st.markdown('<div class="title-text" style="font-size: 1.2rem; margin-bottom: 0.5rem;">🎯 Base Eval Runner</div>', unsafe_allow_html=True)
     if eval_cases:
-        case_options = ["None"] + [f"{c['id']} - {c.get('query', c.get('turns', [{}])[0].get('content', ''))[:30]}..." for c in eval_cases]
-        selected_case_idx = st.selectbox("Load Test Case", range(len(case_options)), format_func=lambda x: case_options[x], index=0)
+        # Load run status for the selected version
+        case_status = get_case_status_for_version(version)
         
-        if selected_case_idx > 0:
-            case = eval_cases[selected_case_idx - 1]
+        # Build custom labels and priorities (0: Failed, 1: Untested, 2: Passed)
+        case_items = []
+        for c in eval_cases:
+            c_id = c["id"]
+            status = case_status.get(c_id, None)
+            if status is False:
+                label = f"❌ [FAIL] {c_id}"
+                priority = 0
+            elif status is True:
+                label = f"✅ [PASS] {c_id}"
+                priority = 2
+            else:
+                label = f"⚪ [UNTESTED] {c_id}"
+                priority = 1
+            query_preview = c.get('query', c.get('turns', [{}])[-1].get('content', ''))[:25]
+            full_label = f"{label} ({query_preview}...)"
+            case_items.append((c, full_label, priority))
+            
+        # Sort so Failed (0) comes first, then Untested (1), then Passed (2)
+        case_items.sort(key=lambda x: (x[2], x[0]["id"]))
+        
+        # Build the final options list for Streamlit selectbox
+        options = [("None", "Select a case...")] + [(item[0], item[1]) for item in case_items]
+        selected_option = st.selectbox(
+            "Load Test Case",
+            options,
+            format_func=lambda x: x[1],
+            index=0
+        )
+        
+        if selected_option[0] != "None":
+            case = selected_option[0]
             st.session_state.selected_case = case
             
             # Show case details
